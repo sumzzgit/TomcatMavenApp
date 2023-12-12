@@ -1,0 +1,24 @@
+pipeline{
+    agent any
+    stages{
+        stage("fetch-artifact"){
+            agent{
+                label 'slave-2'
+            }
+            steps{
+                script{
+                    copyArtifacts projectName: 'test_maven', selector: upstream()
+                }
+            }
+        }
+            stage("deploy"){
+                agent{
+                    label 'slave-2'
+                }
+                steps{
+                    sh 'sudo docker cp target/*.war tomcat:/usr/local/tomcat/webapps/'
+                    sh 'sudo docker restart tomcat'
+                }
+            }
+    }
+}
