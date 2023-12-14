@@ -1,0 +1,92 @@
+pipeline{
+    agent any
+    tools{
+        git 'git'
+        maven 'maven'
+    }
+    triggers{
+        githubPush()
+    }
+    stages{
+        stage("git-checkout"){
+            steps{
+                git branch: 'master', credentialsId: 'git-creds', url: 'https://github.com/sumzzgit/TomcatMavenApp.git'
+            }
+        }
+        stage("build"){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        // stage("archive-artifact"){
+        //     steps{
+        //         archiveArtifacts artifacts: '**/*.war'
+        //     }
+        // }
+        stage("stash"){
+            steps{
+                stash(name:'war_file' , includes:'**/*.war , files/*')
+            }
+        }
+        stage("unstash"){
+            agent{
+                label 'slave-2'
+            }
+            steps{
+                unstash(name:'war_file')
+            }
+        }
+        stage("aws-config"){
+            agent{
+                label 'slave-2'
+            }
+            steps{
+                script{
+                    withCredentials([[
+                            $class: 'AmazonWebServicesCredentialsBinding',
+                            credentialsId: "aws-creds",
+                            accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                            secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]]){
+                             sh '''   echo 'export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID' | sudo tee -a /etc/profile
+                                      echo 'export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY' | sudo tee -a  /etc/profile
+                                      echo 'export AWS_DEFAULT_REGION=ap-south-1' | sudo tee -a  /etc/profile
+                                '''
+                        } //tee command takes std input and prints it in stdout(terminal) and stores it file(override ) to not override the file use -a (append)
+                }
+            }
+        }
+        stage("docker-build"){
+            agent{
+                label 'slave-2'
+            }
+            steps{
+                sh 'sudo docker build -t tomcat -f files/Dockerfile .'
+                sh '''
+                    sudo aws ecr get-login-password --region ap-south-1 |sudo docker login --username AWS --password-stdin 523535113198.dkr.ecr.ap-south-1.amazonaws.com
+                    sudo docker tag tomcat:latest 523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-app:$BUILD_TAG
+                    sudo docker push 523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-app:$BUILD_TAG
+                    sudo docker rmi 523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-app:$BUILD_TAG
+                '''
+                //be specific on the java-app part becouse this should match with your repo name or else docker push will show retrying error
+            }
+        }
+        stage("depoly-to-eks"){
+            agent{
+                label 'slave-2'
+            }
+            // environment{
+            //     IMAGE = '523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-app:$BUILD_TAG'
+            // }
+            steps{
+                sh '''
+                    export IMAGE=523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-app:$BUILD_TAG
+                    envsubst < files/deployment.yml > files/deploy.yml
+                    aws eks update-kubeconfig --name test-cluster --region ap-south-1
+                    kubectl apply -f files/deploy.yml
+                    kubectl apply -f files/service.yml
+                '''
+            }
+        }
+    }
+}
