@@ -11,17 +11,5 @@ phases:
       - export PATH=$PATH:/opt/sonar-scanner-4.6.2.2472-linux/bin
   build:
     commands:
-      - cat << 'EOF' > run.sh
-        if [[ $run_sonar == "YES" ]]; then 
-          echo "Running SonarQube analysis..."
-          mvn clean verify sonar:sonar \
-           -Dsonar.projectKey=test \
-           -Dsonar.projectName='test' \
-           -Dsonar.host.url=http://13.201.65.96:9000 \
-           -Dsonar.token=sqp_86bc3368f6da1889773c3c1ba6f39189ff884436
-        else 
-          mvn clean verify 
-        fi 
-        EOF
       - chmod +x run.sh
       - ./run.sh
