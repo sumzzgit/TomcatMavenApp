@@ -3,9 +3,9 @@ if [[ $run_sonar == "YES" ]]; then
   echo "Running SonarQube analysis..."
   mvn clean verify sonar:sonar \
     -Dsonar.projectKey=test \
-    -Dsonar.projectName="test" \
-    -Dsonar.host.url=http://13.201.65.96:9000 \
-    -Dsonar.token=sqp_86bc3368f6da1889773c3c1ba6f39189ff884436
+    -Dsonar.projectName='test' \
+    -Dsonar.host.url=http://3.110.186.80:9000 \
+    -Dsonar.token=sqp_3cda060719e75ec81dc64c2243d9adafa6b8b3db
 else
   echo "running maven without sonarqube"
   - mvn clean verify
