@@ -13,6 +13,6 @@ phases:
     commands:
       - chmod +x run.sh
       - ./run.sh
-artifacts:
-  files: 
-   - "target/*.war"
+# artifacts:
+#   files: 
+#    - "target/*.war"
