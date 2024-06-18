@@ -17,3 +17,11 @@ steps:
     javaHomeOption: 'JDKVersion'
     jdkVersionOption: '1.8'
     goals: 'package'
+
+- task: SnykSecurityScan@1
+  inputs:
+    serviceConnectionEndpoint: 'snyk'
+    testType: 'code'
+    failOnIssues: false
+    projectName: 'MavenProjectTest'
+    organization: 'sumzzgit'
