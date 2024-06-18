@@ -1,27 +1,28 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
 - master
 
 pool:
   name: Default
 
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    goals: 'package'
+jobs:
+- job: BuildAndTest
+  steps:
+  - task: Maven@4
+    inputs:
+      mavenPomFile: 'pom.xml'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      javaHomeOption: 'Path'
+      jdkDirectory: '/usr/lib/jvm/java-17-openjdk-amd64'
+      mavenVersionOption: 'Default'
+      mavenAuthenticateFeed: false
+      effectivePomSkip: false
+      sonarQubeRunAnalysis: false
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'snyk'
-    testType: 'code'
-    failOnIssues: false
-    projectName: 'MavenProjectTest'
-    organization: 'sumzzgit'
+  - task: SnykSecurityScan@1
+    inputs:
+      serviceConnectionEndpoint: 'snyk'
+      testType: 'code'
+      failOnIssues: false
+      projectName: 'MavenProjectTest'
+      organization: 'sumzzgit'
