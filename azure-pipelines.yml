@@ -11,7 +11,7 @@ jobs:
     inputs:
       serviceConnectionEndpoint: 'snyk'
       testType: 'code'
-      failOnIssues: false
+      failOnIssues: true
       projectName: 'MavenProjectTest'
       organization: 'sumzzgit'
 
