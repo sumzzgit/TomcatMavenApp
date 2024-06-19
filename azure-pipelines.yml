@@ -13,7 +13,7 @@ jobs:
       testType: 'app'
       failOnIssues: true
       projectName: 'sumzzgit/TomcatMavenApp'
-      organization: 'sumzzgit'
+      organization: '513059dd-feb7-49b0-8a40-07d8a127138a'
 
   - task: Maven@4
     inputs:
