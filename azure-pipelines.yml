@@ -10,9 +10,9 @@ jobs:
   - task: SnykSecurityScan@1
     inputs:
       serviceConnectionEndpoint: 'snyk'
-      testType: 'code'
+      testType: 'app'
       failOnIssues: true
-      projectName: 'MavenProjectTest'
+      projectName: 'sumzzgit/TomcatMavenApp'
       organization: 'sumzzgit'
 
   - task: Maven@4
