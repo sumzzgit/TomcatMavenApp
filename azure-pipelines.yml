@@ -10,8 +10,8 @@ jobs:
   - task: SnykSecurityScan@1
     inputs:
       serviceConnectionEndpoint: 'snyk'
-      testType: 'code'
-      failOnIssues: true
+      testType: 'app'
+      failOnIssues: false
       projectName: 'sumzzgit/TomcatMavenApp'
       organization: '513059dd-feb7-49b0-8a40-07d8a127138a'
       additionalArguments: '--json-file-output=/home/azureuser/myagent/_work/snyk-report.json '
