@@ -7,6 +7,14 @@ pool:
 jobs:
 - job: BuildAndTest
   steps:
+  - task: SnykSecurityScan@1
+    inputs:
+      serviceConnectionEndpoint: 'snyk'
+      testType: 'code'
+      failOnIssues: false
+      projectName: 'MavenProjectTest'
+      organization: 'sumzzgit'
+
   - task: Maven@4
     inputs:
       mavenPomFile: 'pom.xml'
@@ -18,11 +26,3 @@ jobs:
       mavenAuthenticateFeed: false
       effectivePomSkip: false
       sonarQubeRunAnalysis: false
-
-  - task: SnykSecurityScan@1
-    inputs:
-      serviceConnectionEndpoint: 'snyk'
-      testType: 'code'
-      failOnIssues: false
-      projectName: 'MavenProjectTest'
-      organization: 'sumzzgit'
