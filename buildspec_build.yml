@@ -72,6 +72,9 @@ phases:
     - export AWS_SESSION_TOKEN="$(echo ${creds} | jq -r '.Credentials.SessionToken')"
     - export AWS_EXPIRATION=$(echo ${creds} | jq -r '.Credentials.Expiration')
 
+    - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}
+    - kubectl cluster-info
+
     - kubectl apply -f files/deployment.yml --dry-run=client > deployment_changes.log
 
     - zip reports.zip deployment_changes.log kube-linter.log hadolint.log
