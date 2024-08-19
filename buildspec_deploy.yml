@@ -15,14 +15,14 @@ phases:
     - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.15/2023-01-11/bin/linux/amd64/kubectl
     - chmod +x ./kubectl
     - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
+    - sudo yum install gettext -y
     - wget https://github.com/zaproxy/zaproxy/releases/download/v2.14.0/ZAP_2.14.0_Linux.tar.gz
     - tar -xvf ZAP_2.14.0_Linux.tar.gz
 
   post_build:
     commands:
-    # - export IMAGE="523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-aws:$CODEBUILD_BUILD_NUMBER"
-    # - envsubst < files/deployment.yml > depoly.yml
+    - export IMAGE="654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat:latest"
+    - envsubst < files/deployment.yml > depoly.yml
     - creds=$(aws sts assume-role --role-arn "${ASSUME_ROLE_ARN}" --role-session-name "test-cli" --duration-seconds 900)
     - export AWS_ACCESS_KEY_ID="$(echo ${creds} | jq -r '.Credentials.AccessKeyId')"
     - export AWS_SECRET_ACCESS_KEY="$(echo ${creds} | jq -r '.Credentials.SecretAccessKey')"

@@ -17,5 +17,6 @@ spec:
       containers:
       - name: java-app
         image: $IMAGE
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080

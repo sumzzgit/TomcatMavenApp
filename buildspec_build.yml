@@ -45,6 +45,7 @@ phases:
       -Dsonar.projectName='test' \
       -Dsonar.host.url=http://15.207.247.240:9000 \
       -Dsonar.token=squ_5515e3ec6e39d276a729541251413c251c343807
+    - mvn test
 
   build:
     commands:
