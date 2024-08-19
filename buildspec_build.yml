@@ -61,6 +61,8 @@ phases:
     commands:
     #  Docker file validation using Hadolint 
     - hadolint --config hadolint.yml Dockerfile 2>&1 | tee hadolint.log
+    - cat hadolint.log
+    - hadolint --config hadolint.yml Dockerfile 2>&1
 
     # kube-linter checks 
     - kube-linter checks list
