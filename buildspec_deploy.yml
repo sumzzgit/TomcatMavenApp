@@ -1,0 +1,39 @@
+version: 0.2
+env:
+  variables:
+    ECR_URI: "654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat"
+    ASSUME_ROLE_ARN: "arn:aws:iam::654654515013:role/eks-access-for-codebuild"
+    CLUSTER_NAME: "poc-eks"
+    REGION: "ap-south-1"
+    ACC_NO: "654654515013"
+    BUCKET_NAME: "site-loading-test-bucket"
+
+phases:
+  install:
+    commands:
+    - echo Installing app dependencies...
+    - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.15/2023-01-11/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl
+    - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+    - wget https://github.com/zaproxy/zaproxy/releases/download/v2.14.0/ZAP_2.14.0_Linux.tar.gz
+    - tar -xvf ZAP_2.14.0_Linux.tar.gz
+
+  post_build:
+    commands:
+    # - export IMAGE="523535113198.dkr.ecr.ap-south-1.amazonaws.com/java-aws:$CODEBUILD_BUILD_NUMBER"
+    # - envsubst < files/deployment.yml > depoly.yml
+    - creds=$(aws sts assume-role --role-arn "${ASSUME_ROLE_ARN}" --role-session-name "test-cli" --duration-seconds 900)
+    - export AWS_ACCESS_KEY_ID="$(echo ${creds} | jq -r '.Credentials.AccessKeyId')"
+    - export AWS_SECRET_ACCESS_KEY="$(echo ${creds} | jq -r '.Credentials.SecretAccessKey')"
+    - export AWS_SESSION_TOKEN="$(echo ${creds} | jq -r '.Credentials.SessionToken')"
+    - export AWS_EXPIRATION=$(echo ${creds} | jq -r '.Credentials.Expiration')
+    - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}
+    - kubectl apply -f files/deployment.yml
+    - kubectl apply -f files/service.yml
+    - LB_ADDRESS=$(kubectl get svc java-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    - ./ZAP_2.14.0/zap.sh -cmd -quickurl http://LB_ADDRESS/ -quickprogress -quickout ../zap_report.html
+
+artifacts:
+  files:
+  - 'zap_report.html'
