@@ -60,9 +60,10 @@ phases:
   post_build:
     commands:
     #  Docker file validation using Hadolint 
-    - hadolint --config hadolint.yml Dockerfile 2>&1 | tee hadolint.log
+    - |
+      hadolint --config hadolint.yml Dockerfile 2>&1 | tee hadolint.log
     - cat -n hadolint.log
-    - hadolint --config hadolint.yml Dockerfile 2>&1
+    - hadolint --config hadolint.yml Dockerfile
 
     # kube-linter checks 
     - kube-linter checks list
