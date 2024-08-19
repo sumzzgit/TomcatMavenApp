@@ -2,7 +2,7 @@ version: 0.2
 env:
   variables:
     ECR_URI: "654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat"
-    ASSUME_ROLE_ARN: "arn:aws:iam::654654515013:role/eks-access-for-codebuild"
+    ASSUME_ROLE_ARN: "arn:aws:iam::654654515013:role/EksCodeBuildKubectlRole"
     CLUSTER_NAME: "poc-eks"
     REGION: "ap-south-1"
     ACC_NO: "654654515013"
