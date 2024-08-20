@@ -7,6 +7,7 @@ env:
     REGION: "ap-south-1"
     ACC_NO: "654654515013"
     BUCKET_NAME: "site-loading-test-bucket"
+    IMAGE: "654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat:latest"
 
 phases:
   install:
