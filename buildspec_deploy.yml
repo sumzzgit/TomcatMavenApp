@@ -7,7 +7,7 @@ env:
     REGION: "ap-south-1"
     ACC_NO: "654654515013"
     BUCKET_NAME: "site-loading-test-bucket"
-
+    IMAGE: "654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat:latest"
 phases:
   install:
     commands:
@@ -21,7 +21,10 @@ phases:
 
   post_build:
     commands:
-    - export IMAGE="654654515013.dkr.ecr.ap-south-1.amazonaws.com/tomcat:latest"
+    - echo "Manifest files backup..."
+    - TIMESTAMP=$(date +%Y%m%d%H%M%S)
+    - zip ConfigBackup${TIMESTAMP}.zip files/deployment.yml files/service.yml
+    - aws s3 cp ConfigBackup${TIMESTAMP}.zip s3://${BUCKET_NAME}/mainfest_backups/ConfigBackup${TIMESTAMP}.zip
     - envsubst < files/deployment.yml > depoly.yml
     - creds=$(aws sts assume-role --role-arn "${ASSUME_ROLE_ARN}" --role-session-name "test-cli" --duration-seconds 900)
     - export AWS_ACCESS_KEY_ID="$(echo ${creds} | jq -r '.Credentials.AccessKeyId')"
@@ -29,8 +32,13 @@ phases:
     - export AWS_SESSION_TOKEN="$(echo ${creds} | jq -r '.Credentials.SessionToken')"
     - export AWS_EXPIRATION=$(echo ${creds} | jq -r '.Credentials.Expiration')
     - aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}
-    - kubectl apply -f files/deployment.yml
+    - kubectl apply -f depoly.yml
     - kubectl apply -f files/service.yml
+
+    - echo "Waiting for the deployment to complete...."
+    - timeout 60s kubectl rollout status deploy/java-app-deployment
+    - if [ $? -ne 0 ]; then echo "Deployment failed or timed out! Initiating rollback."; kubectl rollout undo deployment/java-app-deployment; else echo "Deployment succeeded!"; fi
+    - echo "Running the OWASP Testing...."
     - LB_ADDRESS=$(kubectl get svc java-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
     - ./ZAP_2.14.0/zap.sh -cmd -quickurl http://LB_ADDRESS/ -quickprogress -quickout ../zap_report.html
 

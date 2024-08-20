@@ -4,6 +4,8 @@ metadata:
   name: java-app-deployment
   labels:
     app: java
+  annotations:
+    deployment.kubernetes.io/revision: "${CODEBUILD_BUILD_NUMBER}"
 spec:
   replicas: 2
   selector:
@@ -16,7 +18,7 @@ spec:
     spec:
       containers:
       - name: java-app
-        image: $IMAGE
+        image: ${IMAGE}
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
